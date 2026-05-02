@@ -83,8 +83,16 @@ defmodule PhxStats.AnalyzerTest do
   @empty_stats %{files: 0, lines: 0, loc: 0, modules: 0, functions: 0}
 
   describe "analyze_file/1" do
-    test "returns empty stats when file is missing" do
-      assert Analyzer.analyze_file("does/not/exist.ex") == @empty_stats
+    import ExUnit.CaptureIO
+
+    test "warns and returns empty stats when file is missing" do
+      log =
+        capture_io(:stderr, fn ->
+          assert Analyzer.analyze_file("does/not/exist.ex") == @empty_stats
+        end)
+
+      assert log =~ "phx_stats"
+      assert log =~ "does/not/exist.ex"
     end
   end
 

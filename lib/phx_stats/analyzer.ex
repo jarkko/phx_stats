@@ -90,12 +90,22 @@ defmodule PhxStats.Analyzer do
     |> sum_stats()
   end
 
-  @doc "Analyzes a single file. Returns zeroed stats if the file cannot be read."
+  @doc """
+  Analyzes a single file.
+
+  Emits a warning to stderr and returns zeroed stats if the file cannot be
+  read — so that one unreadable file doesn't abort an entire `mix stats` run,
+  but the failure stays visible.
+  """
   @spec analyze_file(Path.t()) :: stats()
   def analyze_file(file) do
     case File.read(file) do
-      {:ok, content} -> analyze_content(content)
-      {:error, _} -> @empty
+      {:ok, content} ->
+        analyze_content(content)
+
+      {:error, reason} ->
+        IO.warn("phx_stats: could not read #{file}: #{:file.format_error(reason)}", [])
+        @empty
     end
   end
 
