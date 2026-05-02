@@ -56,6 +56,20 @@ defmodule PhxStats.AnalyzerTest do
       assert stats.functions == 0
     end
 
+    test "ignores `def`/`defmodule` occurrences inside comments" do
+      content = """
+      # def fake_function, do: :ok
+      # defmodule FakeModule do
+      defmodule Real do
+        def real, do: :ok
+      end
+      """
+
+      stats = Analyzer.analyze_content(content)
+      assert stats.modules == 1
+      assert stats.functions == 1
+    end
+
     test "empty content yields zero LOC and one file" do
       stats = Analyzer.analyze_content("")
       assert stats.files == 1

@@ -70,15 +70,14 @@ defmodule PhxStats.Analyzer do
   @spec analyze_content(String.t()) :: stats()
   def analyze_content(content) do
     lines = String.split(content, "\n")
-
-    loc = Enum.count(lines, fn line -> not blank_or_comment?(line) end)
+    code_lines = Enum.reject(lines, &blank_or_comment?/1)
 
     %{
       files: 1,
       lines: length(lines),
-      loc: loc,
-      modules: count_lines_matching(lines, ~r/^\s*defmodule\s/),
-      functions: count_lines_matching(lines, ~r/^\s*def(p|macro|macrop)?\s/)
+      loc: length(code_lines),
+      modules: count_lines_matching(code_lines, ~r/^\s*defmodule\s/),
+      functions: count_lines_matching(code_lines, ~r/^\s*def(p|macro|macrop)?\s/)
     }
   end
 
