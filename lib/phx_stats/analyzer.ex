@@ -1,6 +1,10 @@
 defmodule PhxStats.Analyzer do
   @moduledoc """
-  Pure analysis functions: count lines, modules, and functions in Elixir source files.
+  Analysis functions: count lines, modules, and functions in Elixir source files.
+
+  All functions are pure with one exception: `analyze_file/1` writes to stderr
+  if a file cannot be read, so a single unreadable file does not silently drop
+  out of the totals.
 
   ## What counts as a function
 
@@ -93,7 +97,7 @@ defmodule PhxStats.Analyzer do
   @doc """
   Analyzes a single file.
 
-  Emits a warning to stderr and returns zeroed stats if the file cannot be
+  Writes a message to stderr and returns zeroed stats if the file cannot be
   read — so that one unreadable file doesn't abort an entire `mix stats` run,
   but the failure stays visible.
   """
@@ -104,7 +108,12 @@ defmodule PhxStats.Analyzer do
         analyze_content(content)
 
       {:error, reason} ->
-        IO.warn("phx_stats: could not read #{file}: #{:file.format_error(reason)}", [])
+        IO.write(
+          :stderr,
+          "phx_stats: could not read #{inspect(file)}: " <>
+            "#{:file.format_error(reason)}\n"
+        )
+
         @empty
     end
   end
