@@ -126,5 +126,28 @@ defmodule PhxStats.AnalyzerTest do
         assert report.tests.files == 1
       end)
     end
+
+    test "assigns each file to the first matching category and Total counts it once",
+         %{tmp: tmp} do
+      File.cd!(tmp, fn ->
+        report =
+          Analyzer.analyze(
+            [
+              {"Controllers", "lib/**/controllers/**/*.ex"},
+              {"Libraries", "lib/**/*.ex"}
+            ],
+            "test/**/*_test.exs"
+          )
+
+        assert {"Controllers", controllers_stats} =
+                 Enum.find(report.categories, &match?({"Controllers", _}, &1))
+
+        assert controllers_stats.files == 1
+        refute Enum.find(report.categories, &match?({"Libraries", _}, &1))
+
+        assert report.total.files == 1
+        assert report.total.lines == controllers_stats.lines
+      end)
+    end
   end
 end
