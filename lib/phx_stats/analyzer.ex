@@ -28,16 +28,31 @@ defmodule PhxStats.Analyzer do
   @doc """
   Builds a full report given a list of `{name, glob}` categories and a test glob.
 
-  Categories that match no files are dropped. The total excludes test files —
-  tests are counted separately so the code-to-test ratio is meaningful.
+  Each source file is assigned to the **first** category whose glob matches it,
+  so overlapping patterns do not double-count. Categories that end up with no
+  files are dropped. The total excludes test files — tests are counted
+  separately so the code-to-test ratio is meaningful.
   """
   @spec analyze([{String.t(), String.t()}], String.t()) :: report()
   def analyze(categories, test_pattern) do
-    category_stats =
-      categories
-      |> Enum.map(fn {name, pattern} -> {name, analyze_pattern(pattern)} end)
-      |> Enum.reject(fn {_name, stats} -> stats.files == 0 end)
+    {category_stats, _assigned} =
+      Enum.reduce(categories, {[], MapSet.new()}, fn {name, pattern}, {acc, taken} ->
+        files =
+          pattern
+          |> find_files()
+          |> Enum.reject(&MapSet.member?(taken, &1))
 
+        case files do
+          [] ->
+            {acc, taken}
+
+          _ ->
+            stats = files |> Enum.map(&analyze_file/1) |> sum_stats()
+            {[{name, stats} | acc], MapSet.union(taken, MapSet.new(files))}
+        end
+      end)
+
+    category_stats = Enum.reverse(category_stats)
     test_stats = analyze_pattern(test_pattern)
 
     total =

@@ -13,6 +13,10 @@ defmodule PhxStats.Config do
         ],
         test_pattern: "test/**/*_test.exs"
 
+  Each source file is assigned to the **first** category whose glob matches it,
+  so overlapping patterns are safe — list more specific categories first and
+  use a broad fallback (e.g. `lib/**/*.ex`) last to catch the rest.
+
   If no configuration is provided, sensible Phoenix defaults are used (see
   `default_categories/0`).
   """
