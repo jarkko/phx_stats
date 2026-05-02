@@ -30,16 +30,28 @@ defmodule PhxStats.Analyzer do
 
   @empty %{files: 0, lines: 0, loc: 0, modules: 0, functions: 0}
 
+  @type option ::
+          {:categories, [{String.t(), String.t()}]}
+          | {:test_pattern, String.t()}
+
   @doc """
-  Builds a full report given a list of `{name, glob}` categories and a test glob.
+  Builds a full report.
+
+  ## Options
+
+    * `:categories` (required) — a list of `{name, glob}` pairs.
+    * `:test_pattern` (required) — a wildcard glob for test files.
 
   Each source file is assigned to the **first** category whose glob matches it,
   so overlapping patterns do not double-count. Categories that end up with no
   files are dropped. The total excludes test files — tests are counted
   separately so the code-to-test ratio is meaningful.
   """
-  @spec analyze([{String.t(), String.t()}], String.t()) :: report()
-  def analyze(categories, test_pattern) do
+  @spec analyze([option()]) :: report()
+  def analyze(opts) when is_list(opts) do
+    categories = Keyword.fetch!(opts, :categories)
+    test_pattern = Keyword.fetch!(opts, :test_pattern)
+
     {category_stats, _assigned} =
       Enum.reduce(categories, {[], MapSet.new()}, fn {name, pattern}, {acc, taken} ->
         files =

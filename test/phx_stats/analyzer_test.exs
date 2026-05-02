@@ -100,7 +100,7 @@ defmodule PhxStats.AnalyzerTest do
     end
   end
 
-  describe "analyze/2 (integration with the file system)" do
+  describe "analyze/1 (integration with the file system)" do
     setup do
       tmp = Path.join(System.tmp_dir!(), "phx_stats_#{System.unique_integer([:positive])}")
       File.mkdir_p!(Path.join(tmp, "lib/app/controllers"))
@@ -128,11 +128,11 @@ defmodule PhxStats.AnalyzerTest do
       File.cd!(tmp, fn ->
         report =
           Analyzer.analyze(
-            [
+            categories: [
               {"Controllers", "lib/**/controllers/**/*.ex"},
               {"Empty", "lib/**/nope/**/*.ex"}
             ],
-            "test/**/*_test.exs"
+            test_pattern: "test/**/*_test.exs"
           )
 
         names = Enum.map(report.categories, fn {name, _} -> name end)
