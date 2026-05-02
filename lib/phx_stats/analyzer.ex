@@ -1,6 +1,15 @@
 defmodule PhxStats.Analyzer do
   @moduledoc """
   Pure analysis functions: count lines, modules, and functions in Elixir source files.
+
+  ## What counts as a function
+
+  The function counter recognises the following definition forms:
+  `def`, `defp`, `defmacro`, `defmacrop`, `defguard`, `defguardp`,
+  `defdelegate`, `defn`, and `defnp`.
+
+  Forms that don't define callable functions — `defstruct`, `defprotocol`,
+  `defimpl`, `defexception`, `defrecord` — are intentionally not counted.
   """
 
   @type stats :: %{
@@ -77,6 +86,12 @@ defmodule PhxStats.Analyzer do
     end
   end
 
+  # Function-defining forms recognised by the counter.
+  # Note: `defstruct`, `defprotocol`, `defimpl`, `defexception`, `defrecord`
+  # are intentionally excluded — they don't define callable functions.
+  @function_keywords ~w(def defp defmacro defmacrop defguard defguardp defdelegate defn defnp)
+  @function_regex ~r/^\s*(?:#{Enum.join(@function_keywords, "|")})\s/
+
   @doc "Analyzes a string of Elixir source code."
   @spec analyze_content(String.t()) :: stats()
   def analyze_content(content) do
@@ -89,7 +104,7 @@ defmodule PhxStats.Analyzer do
       lines: length(lines),
       loc: loc,
       modules: count_lines_matching(lines, ~r/^\s*defmodule\s/),
-      functions: count_lines_matching(lines, ~r/^\s*def(p|macro|macrop)?\s/)
+      functions: count_lines_matching(lines, @function_regex)
     }
   end
 
