@@ -46,8 +46,8 @@ defmodule Mix.Tasks.Stats do
   @impl Mix.Task
   @spec run([String.t()]) :: :ok
   def run(_args) do
-    Config.categories()
-    |> Analyzer.analyze(Config.test_pattern())
+    [categories: Config.categories(), test_pattern: Config.test_pattern()]
+    |> Analyzer.analyze()
     |> Formatter.format()
     |> IO.puts()
   end
