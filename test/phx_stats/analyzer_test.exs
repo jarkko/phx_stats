@@ -100,6 +100,23 @@ defmodule PhxStats.AnalyzerTest do
     end
   end
 
+  describe "analyze/1 input validation" do
+    test "raises on missing required option" do
+      assert_raise KeyError, fn -> Analyzer.analyze(test_pattern: "test/**/*_test.exs") end
+      assert_raise KeyError, fn -> Analyzer.analyze(categories: []) end
+    end
+
+    test "raises on unknown option keys" do
+      assert_raise ArgumentError, fn ->
+        Analyzer.analyze(
+          categories: [],
+          test_pattern: "x",
+          catagories: []
+        )
+      end
+    end
+  end
+
   describe "analyze/1 (integration with the file system)" do
     setup do
       tmp = Path.join(System.tmp_dir!(), "phx_stats_#{System.unique_integer([:positive])}")
@@ -149,11 +166,11 @@ defmodule PhxStats.AnalyzerTest do
       File.cd!(tmp, fn ->
         report =
           Analyzer.analyze(
-            [
+            categories: [
               {"Controllers", "lib/**/controllers/**/*.ex"},
               {"Libraries", "lib/**/*.ex"}
             ],
-            "test/**/*_test.exs"
+            test_pattern: "test/**/*_test.exs"
           )
 
         assert {"Controllers", controllers_stats} =

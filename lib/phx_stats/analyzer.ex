@@ -49,6 +49,7 @@ defmodule PhxStats.Analyzer do
   """
   @spec analyze([option()]) :: report()
   def analyze(opts) when is_list(opts) do
+    opts = Keyword.validate!(opts, [:categories, :test_pattern])
     categories = Keyword.fetch!(opts, :categories)
     test_pattern = Keyword.fetch!(opts, :test_pattern)
 
