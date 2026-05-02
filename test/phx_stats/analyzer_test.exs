@@ -45,6 +45,21 @@ defmodule PhxStats.AnalyzerTest do
       assert stats.functions == 2
     end
 
+    test "counts defguard, defguardp, defdelegate, and defn variants" do
+      content = """
+      defmodule M do
+        defguard a(x) when is_integer(x)
+        defguardp b(x) when is_atom(x)
+        defdelegate c(x), to: List
+        defn d(x), do: x
+        defnp e(x), do: x
+      end
+      """
+
+      stats = Analyzer.analyze_content(content)
+      assert stats.functions == 5
+    end
+
     test "does not count `defmodule` lines as functions" do
       stats = Analyzer.analyze_content("defmodule Foo do\nend\n")
       assert stats.modules == 1
