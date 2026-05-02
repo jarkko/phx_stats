@@ -65,15 +65,17 @@ defmodule PhxStats.AnalyzerTest do
     end
   end
 
+  @empty_stats %{files: 0, lines: 0, loc: 0, modules: 0, functions: 0}
+
   describe "analyze_file/1" do
     test "returns empty stats when file is missing" do
-      assert Analyzer.analyze_file("does/not/exist.ex") == Analyzer.empty()
+      assert Analyzer.analyze_file("does/not/exist.ex") == @empty_stats
     end
   end
 
   describe "sum_stats/1" do
     test "sums all fields and returns empty for an empty list" do
-      assert Analyzer.sum_stats([]) == Analyzer.empty()
+      assert Analyzer.sum_stats([]) == @empty_stats
 
       a = %{files: 1, lines: 10, loc: 8, modules: 1, functions: 2}
       b = %{files: 2, lines: 30, loc: 25, modules: 3, functions: 5}

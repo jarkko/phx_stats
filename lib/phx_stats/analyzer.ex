@@ -21,10 +21,6 @@ defmodule PhxStats.Analyzer do
 
   @empty %{files: 0, lines: 0, loc: 0, modules: 0, functions: 0}
 
-  @doc "Returns a stats map of zeros."
-  @spec empty() :: stats()
-  def empty, do: @empty
-
   @doc """
   Builds a full report given a list of `{name, glob}` categories and a test glob.
 
