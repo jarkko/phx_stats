@@ -1,6 +1,15 @@
 defmodule PhxStats.Analyzer do
   @moduledoc """
   Pure analysis functions: count lines, modules, and functions in Elixir source files.
+
+  ## What counts as a function
+
+  The function counter recognises the following definition forms:
+  `def`, `defp`, `defmacro`, `defmacrop`, `defguard`, `defguardp`,
+  `defdelegate`, `defn`, and `defnp`.
+
+  Forms that don't define callable functions — `defstruct`, `defprotocol`,
+  `defimpl`, `defexception`, `defrecord` — are intentionally not counted.
   """
 
   @type stats :: %{
