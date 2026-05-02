@@ -33,4 +33,43 @@ defmodule PhxStats.FormatterTest do
     assert output =~ "Code to Test Ratio: 1:0.0"
     assert output =~ "Total"
   end
+
+  test "name column widens to fit long category names while staying aligned" do
+    long_name = "Background Workers and Mailers"
+
+    report = %{
+      categories: [{long_name, stats(%{lines: 1, loc: 1, modules: 1, functions: 1})}],
+      total: stats(%{lines: 1, loc: 1, modules: 1, functions: 1}),
+      tests: stats(%{})
+    }
+
+    output = Formatter.format(report)
+    lines = String.split(output, "\n", trim: true)
+
+    assert Enum.any?(lines, &String.contains?(&1, long_name))
+
+    table_lines = Enum.filter(lines, &String.starts_with?(&1, ["+", "|"]))
+    [first_width | _] = widths = Enum.map(table_lines, &String.length/1)
+    assert Enum.all?(widths, &(&1 == first_width)),
+           "expected uniform table width, got: #{inspect(widths)}"
+  end
+
+  test "numeric column widens to fit large values" do
+    big = stats(%{lines: 1_234_567, loc: 1_000_000, modules: 1234, functions: 56789})
+
+    report = %{
+      categories: [{"Lib", big}],
+      total: big,
+      tests: stats(%{loc: 100})
+    }
+
+    output = Formatter.format(report)
+    lines = String.split(output, "\n", trim: true)
+
+    assert Enum.any?(lines, &String.contains?(&1, "1234567"))
+
+    table_lines = Enum.filter(lines, &String.starts_with?(&1, ["+", "|"]))
+    [first_width | _] = widths = Enum.map(table_lines, &String.length/1)
+    assert Enum.all?(widths, &(&1 == first_width))
+  end
 end
